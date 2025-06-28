@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30 Günlük Kişisel Gelişim Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .challenge-card {
+            transition: all 0.3s ease;
+        }
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.3s;
+            stroke: #4f46e5;
+            stroke-width: 8;
+        }
+        .progress-ring-circle-bg {
+            stroke: #e5e7eb;
+            stroke-width: 8;
+        }
+        .tab-active {
+            color: #4f46e5;
+            border-bottom: 2px solid #4f46e5;
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            animation: fall 3s ease-in infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen flex flex-col">
+        <!-- Login/Register Modal -->
+        <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 modal-content">
+                <div id="login-form" class="active-form">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Giriş Yap</h2>
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-700 text-sm font-medium mb-2">E-posta</label>
+                        <input type="email" id="login-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="ornek@email.com">
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 text-sm font-medium mb-2">Şifre</label>
+                        <input type="password" id="login-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+                    </div>
+                    <button id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium transition duration-300">Giriş Yap</button>
+                    <div class="mt-4 text-center">
+                        <p class="text-gray-600">Hesabın yok mu? <a href="#" id="show-register" class="text-indigo-600 hover:text-indigo-800 font-medium">Kayıt Ol</a></p>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <button id="demo-login-btn" class="text-indigo-600 hover:text-indigo-800 font-medium">Demo Hesabı ile Devam Et</button>
+                    </div>
+                </div>
+                
+                <div id="register-form" class="hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Kayıt Ol</h2>
+                    <div class="mb-4">
+                        <label for="register-name" class="block text-gray-700 text-sm font-medium mb-2">Ad Soyad</label>
+                        <input type="text" id="register-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ad Soyad">
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-email" class="block text-gray-700 text-sm font-medium mb-2">E-posta</label>
+                        <input type="email" id="register-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="ornek@email.com">
+                    </div>
+                    <div class="mb-6">
+                        <label for="register-password" class="block text-gray-700 text-sm font-medium mb-2">Şifre</label>
+                        <input type="password" id="register-password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+                    </div>
+                    <button id="register-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium transition duration-300">Kayıt Ol</button>
+                    <div class="mt-4 text-center">
+                        <p class="text-gray-600">Zaten hesabın var mı? <a href="#" id="show-login" class="text-indigo-600 hover:text-indigo-800 font-medium">Giriş Yap</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <svg class="w-10 h-10 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <h1 class="text-2xl font-bold">30 Günlük Kişisel Gelişim Challenge</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="profile-btn" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-full flex items-center transition duration-300">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span id="username-display">Profilim</span>
+                    </button>
+                    <button id="settings-btn" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded-full transition duration-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Profile Modal -->
+        <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Profil Bilgileri</h3>
+                    <button id="close-profile-modal" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex items-center mb-6">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 id="profile-name" class="text-xl font-semibold text-gray-800">Kullanıcı Adı</h4>
+                        <p id="profile-email" class="text-gray-600">kullanici@email.com</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h5 class="text-lg font-semibold text-gray-800 mb-2">İstatistikler</h5>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-gray-100 p-3 rounded-lg text-center">
+                            <span id="completed-days" class="block text-2xl font-bold text-indigo-600">0</span>
+                            <span class="text-sm text-gray-600">Tamamlanan Gün</span>
+                        </div>
+                        <div class="bg-gray-100 p-3 rounded-lg text-center">
+                            <span id="streak-count" class="block text-2xl font-bold text-indigo-600">0</span>
+                            <span class="text-sm text-gray-600">Seri</span>
+                        </div>
+                        <div class="bg-gray-100 p-3 rounded-lg text-center">
+                            <span id="total-points" class="block text-2xl font-bold text-indigo-600">0</span>
+                            <span class="text-sm text-gray-600">Puan</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="logout-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium transition duration-300">Çıkış Yap</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- Progress Overview -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="mb-6 md:mb-0 flex-1">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Merhaba, <span id="welcome-name">Kullanıcı</span>!</h2>
+                        <p class="text-gray-600">30 günlük kişisel gelişim yolculuğunda <span id="current-day-display" class="font-semibold text-indigo-600">1. gündesin</span>. Harika ilerliyorsun!</p>
+                        <div class="mt-4">
+                            <div class="flex items-center">
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 3%"></div>
+                                </div>
+                                <span id="progress-percentage" class="ml-4 text-sm font-medium text-gray-700">%3</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Achievement Badges -->
+                        <div class="mt-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Başarılar</h3>
+                            <div id="achievement-badges" class="flex flex-wrap gap-2">
+                                <!-- Achievement badges will be dynamically generated here -->
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="mt-4 grid grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <div id="weekly-score" class="text-lg font-bold text-green-600">0</div>
+                                <div class="text-xs text-gray-500">Bu Hafta</div>
+                            </div>
+                            <div class="text-center">
+                                <div id="monthly-score" class="text-lg font-bold text-blue-600">0</div>
+                                <div class="text-xs text-gray-500">Bu Ay</div>
+                            </div>
+                            <div class="text-center">
+                                <div id="level-display" class="text-lg font-bold text-purple-600">1</div>
+                                <div class="text-xs text-gray-500">Seviye</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle class="progress-ring-circle-bg" cx="60" cy="60" r="50" fill="transparent"/>
+                            <circle id="progress-ring-circle" class="progress-ring-circle" cx="60" cy="60" r="50" fill="transparent" stroke-dasharray="314" stroke-dashoffset="304"/>
+                        </svg>
+                        <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                            <div class="text-center">
+                                <span id="days-completed" class="text-3xl font-bold text-indigo-600">1</span>
+                                <span class="text-sm text-gray-500 block">/ 30 gün</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Dashboard -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Analitik Dashboard</h2>
+                    <button id="analytics-toggle" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        Detayları Göster
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100 text-sm">Toplam Puan</p>
+                                <p id="total-points-display" class="text-2xl font-bold">0</p>
+                            </div>
+                            <div class="text-3xl">🏆</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-100 text-sm">En Uzun Seri</p>
+                                <p id="best-streak" class="text-2xl font-bold">0</p>
+                            </div>
+                            <div class="text-3xl">🔥</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm">Tamamlama Oranı</p>
+                                <p id="completion-rate" class="text-2xl font-bold">0%</p>
+                            </div>
+                            <div class="text-3xl">📊</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-orange-100 text-sm">Aktif Günler</p>
+                                <p id="active-days" class="text-2xl font-bold">0</p>
+                            </div>
+                            <div class="text-3xl">📅</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Analytics (Hidden by default) -->
+                <div id="detailed-analytics" class="hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Category Performance -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Kategori Performansı</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">🧠 Zihinsel Gelişim</span>
+                                    <div class="flex items-center">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div id="mental-progress" class="bg-purple-500 h-2 rounded-full" style="width: 0%"></div>
+                                        </div>
+                                        <span id="mental-percentage" class="text-sm font-medium">0%</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">💪 Fiziksel Sağlık</span>
+                                    <div class="flex items-center">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div id="physical-progress" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                                        </div>
+                                        <span id="physical-percentage" class="text-sm font-medium">0%</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">⚡ Üretkenlik</span>
+                                    <div class="flex items-center">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div id="productivity-progress" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                                        </div>
+                                        <span id="productivity-percentage" class="text-sm font-medium">0%</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">👥 Sosyal Beceriler</span>
+                                    <div class="flex items-center">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div id="social-progress" class="bg-pink-500 h-2 rounded-full" style="width: 0%"></div>
+                                        </div>
+                                        <span id="social-percentage" class="text-sm font-medium">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Activity -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Haftalık Aktivite</h3>
+                            <div class="grid grid-cols-7 gap-2">
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Pzt</div>
+                                    <div id="activity-mon" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Sal</div>
+                                    <div id="activity-tue" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Çar</div>
+                                    <div id="activity-wed" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Per</div>
+                                    <div id="activity-thu" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Cum</div>
+                                    <div id="activity-fri" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Cmt</div>
+                                    <div id="activity-sat" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">Paz</div>
+                                    <div id="activity-sun" class="w-8 h-8 bg-gray-200 rounded mx-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Controls -->
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                    <!-- Category Tabs -->
+                    <div class="flex overflow-x-auto space-x-4 pb-2">
+                        <button id="category-all" class="category-tab tab-active px-4 py-2 font-medium whitespace-nowrap" data-category="all">Tüm Kategoriler</button>
+                        <button id="category-mental" class="category-tab text-gray-600 hover:text-indigo-600 px-4 py-2 font-medium whitespace-nowrap" data-category="mental">Zihinsel Gelişim</button>
+                        <button id="category-physical" class="category-tab text-gray-600 hover:text-indigo-600 px-4 py-2 font-medium whitespace-nowrap" data-category="physical">Fiziksel Sağlık</button>
+                        <button id="category-productivity" class="category-tab text-gray-600 hover:text-indigo-600 px-4 py-2 font-medium whitespace-nowrap" data-category="productivity">Üretkenlik</button>
+                        <button id="category-social" class="category-tab text-gray-600 hover:text-indigo-600 px-4 py-2 font-medium whitespace-nowrap" data-category="social">Sosyal Beceriler</button>
+                    </div>
+                    
+                    <!-- View Toggle -->
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button id="grid-view-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-indigo-600 text-white">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                            Kart Görünümü
+                        </button>
+                        <button id="calendar-view-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-gray-200 text-gray-700">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Takvim Görünümü
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Challenge -->
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl shadow-lg p-6 mb-8 text-white">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="mb-6 md:mb-0 md:mr-6">
+                        <h3 class="text-xl font-semibold mb-2">Bugünün Challenge'ı</h3>
+                        <h2 id="today-challenge-title" class="text-2xl font-bold mb-4">15 Dakika Meditasyon</h2>
+                        <p id="today-challenge-desc" class="mb-4">Günün koşuşturmasında zihnini dinlendirmek için 15 dakika meditasyon yap. Bu pratik odaklanmanı artıracak ve stres seviyeni düşürecek.</p>
+                        <div class="flex space-x-3">
+                            <button id="complete-btn" class="bg-white text-indigo-600 hover:bg-opacity-90 px-4 py-2 rounded-lg font-medium transition duration-300">Tamamladım</button>
+                            <button id="show-challenge-details" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg font-medium transition duration-300">Detaylar</button>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3 flex justify-center">
+                        <svg class="w-48 h-48" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="100" r="50" fill="rgba(255,255,255,0.2)"/>
+                            <circle cx="100" cy="100" r="40" fill="rgba(255,255,255,0.3)"/>
+                            <circle cx="100" cy="100" r="30" fill="rgba(255,255,255,0.4)"/>
+                            <circle cx="100" cy="100" r="20" fill="rgba(255,255,255,0.5)"/>
+                            <circle cx="100" cy="100" r="10" fill="rgba(255,255,255,0.6)"/>
+                            <g id="person">
+                                <circle cx="100" cy="85" r="12" fill="white"/>
+                                <path d="M80,130 Q100,100 120,130" stroke="white" stroke-width="4" fill="none"/>
+                                <path d="M100,97 L100,115" stroke="white" stroke-width="4"/>
+                                <path d="M85,140 L100,115 L115,140" stroke="white" stroke-width="4" fill="none"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Habit Tracker -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Günlük Alışkanlık Takibi</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="habit-item bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">💧 Su İçme</span>
+                            <span id="water-count" class="text-xs text-gray-500">0/8</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="0"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="1"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="2"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="3"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="4"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="5"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="6"></button>
+                            <button class="water-btn w-6 h-6 bg-gray-200 rounded-full hover:bg-blue-200 transition duration-200" data-index="7"></button>
+                        </div>
+                    </div>
+                    
+                    <div class="habit-item bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">📚 Okuma</span>
+                            <button id="reading-btn" class="w-6 h-6 bg-gray-200 rounded-full hover:bg-green-200 transition duration-200"></button>
+                        </div>
+                        <div class="text-xs text-gray-500">Günlük 30 dakika</div>
+                    </div>
+                    
+                    <div class="habit-item bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">🏃 Egzersiz</span>
+                            <button id="exercise-btn" class="w-6 h-6 bg-gray-200 rounded-full hover:bg-orange-200 transition duration-200"></button>
+                        </div>
+                        <div class="text-xs text-gray-500">Günlük hareket</div>
+                    </div>
+                    
+                    <div class="habit-item bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">🧘 Meditasyon</span>
+                            <button id="meditation-btn" class="w-6 h-6 bg-gray-200 rounded-full hover:bg-purple-200 transition duration-200"></button>
+                        </div>
+                        <div class="text-xs text-gray-500">Günlük 10 dakika</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestions -->
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg p-6 mb-8 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold">AI Önerileri</h2>
+                    </div>
+                    <button id="refresh-suggestions" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded-lg text-sm transition duration-300">
+                        Yenile
+                    </button>
+                </div>
+                <div id="ai-suggestions" class="space-y-3">
+                    <div class="bg-white bg-opacity-10 rounded-lg p-3">
+                        <h3 class="font-semibold mb-1">Bugün için önerim:</h3>
+                        <p class="text-sm opacity-90">Performansına göre 15 dakika nefes egzersizi yapmanı öneriyorum. Bu odaklanmanı artıracak!</p>
+                        <button class="mt-2 bg-white text-emerald-600 px-3 py-1 rounded text-xs font-medium hover:bg-opacity-90 transition duration-300">
+                            Challenge Olarak Ekle
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Challenge Builder -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Akıllı Challenge Oluşturucu</h2>
+                    <div class="flex space-x-2">
+                        <button id="quick-challenge-btn" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-200 transition duration-300">
+                            Hızlı Oluştur
+                        </button>
+                        <button id="template-challenge-btn" class="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-purple-200 transition duration-300">
+                            Şablonlar
+                        </button>
+                        <button id="restore-challenges-btn" class="bg-orange-100 text-orange-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-orange-200 transition duration-300">
+                            Varsayılan Challenge'ları Geri Yükle
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Challenge Templates -->
+                <div id="challenge-templates" class="hidden mb-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Popüler Şablonlar</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="template-card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition duration-300" data-template="morning-routine">
+                            <div class="text-2xl mb-2">🌅</div>
+                            <h4 class="font-semibold text-gray-800">Sabah Rutini</h4>
+                            <p class="text-sm text-gray-600">Güne enerjik başla</p>
+                        </div>
+                        <div class="template-card bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition duration-300" data-template="exercise">
+                            <div class="text-2xl mb-2">🏃‍♂️</div>
+                            <h4 class="font-semibold text-gray-800">Egzersiz</h4>
+                            <p class="text-sm text-gray-600">Fiziksel aktivite</p>
+                        </div>
+                        <div class="template-card bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition duration-300" data-template="meditation">
+                            <div class="text-2xl mb-2">🧘‍♀️</div>
+                            <h4 class="font-semibold text-gray-800">Meditasyon</h4>
+                            <p class="text-sm text-gray-600">Zihinsel dinginlik</p>
+                        </div>
+                        <div class="template-card bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition duration-300" data-template="reading">
+                            <div class="text-2xl mb-2">📚</div>
+                            <h4 class="font-semibold text-gray-800">Okuma</h4>
+                            <p class="text-sm text-gray-600">Bilgi edinme</p>
+                        </div>
+                        <div class="template-card bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition duration-300" data-template="social">
+                            <div class="text-2xl mb-2">👥</div>
+                            <h4 class="font-semibold text-gray-800">Sosyal</h4>
+                            <p class="text-sm text-gray-600">İlişki kurma</p>
+                        </div>
+                        <div class="template-card bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition duration-300" data-template="creativity">
+                            <div class="text-2xl mb-2">🎨</div>
+                            <h4 class="font-semibold text-gray-800">Yaratıcılık</h4>
+                            <p class="text-sm text-gray-600">Sanatsal ifade</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Challenge Form -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="col-span-1 md:col-span-2">
+                        <div class="mb-4">
+                            <label for="custom-challenge-title" class="block text-gray-700 text-sm font-medium mb-2">Challenge Başlığı</label>
+                            <div class="relative">
+                                <input type="text" id="custom-challenge-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Örn: 30 Dakika Yürüyüş">
+                                <button id="ai-title-suggest" class="absolute right-2 top-2 text-indigo-600 hover:text-indigo-800 text-sm">
+                                    ✨ AI Öner
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="custom-challenge-desc" class="block text-gray-700 text-sm font-medium mb-2">Açıklama</label>
+                            <div class="relative">
+                                <textarea id="custom-challenge-desc" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Challenge'ın detaylarını buraya yazabilirsin..."></textarea>
+                                <button id="ai-desc-suggest" class="absolute right-2 top-2 text-indigo-600 hover:text-indigo-800 text-sm">
+                                    ✨ AI Öner
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-4">
+                            <label for="custom-challenge-date" class="block text-gray-700 text-sm font-medium mb-2">Tarih</label>
+                            <input type="date" id="custom-challenge-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="mb-4">
+                            <label for="custom-challenge-category" class="block text-gray-700 text-sm font-medium mb-2">Kategori</label>
+                            <select id="custom-challenge-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="mental">Zihinsel Gelişim</option>
+                                <option value="physical">Fiziksel Sağlık</option>
+                                <option value="productivity">Üretkenlik</option>
+                                <option value="social">Sosyal Beceriler</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="challenge-difficulty" class="block text-gray-700 text-sm font-medium mb-2">Zorluk</label>
+                            <select id="challenge-difficulty" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="easy">Kolay (5-15 dk)</option>
+                                <option value="medium">Orta (15-45 dk)</option>
+                                <option value="hard">Zor (45+ dk)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button id="add-challenge-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300">Challenge Ekle</button>
+                    <button id="save-template-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition duration-300">Şablon Olarak Kaydet</button>
+                </div>
+            </div>
+
+            <!-- Calendar Navigation (Hidden by default) -->
+            <div id="calendar-navigation" class="hidden mb-6">
+                <div class="flex items-center justify-between bg-white rounded-lg shadow p-4">
+                    <button id="prev-month" class="p-2 hover:bg-gray-100 rounded-lg transition duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h2 id="current-month-year" class="text-xl font-bold text-gray-800">Ocak 2024</h2>
+                    <button id="next-month" class="p-2 hover:bg-gray-100 rounded-lg transition duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Grid (Hidden by default) -->
+            <div id="calendar-grid" class="hidden mb-8">
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <!-- Calendar Header -->
+                    <div class="grid grid-cols-7 bg-gray-50">
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Pzt</div>
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Sal</div>
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Çar</div>
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Per</div>
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Cum</div>
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Cmt</div>
+                        <div class="p-3 text-center text-sm font-medium text-gray-700">Paz</div>
+                    </div>
+                    <!-- Calendar Days -->
+                    <div id="calendar-days" class="grid grid-cols-7">
+                        <!-- Calendar days will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challenge Calendar -->
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">30 Günlük Plan</h2>
+            <div id="challenge-calendar" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 mb-8">
+                <!-- Challenge cards will be dynamically generated here -->
+            </div>
+            
+            <div class="text-center">
+                <button id="show-all-days" class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center mx-auto">
+                    Tüm Günleri Göster
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <h3 class="text-xl font-bold mb-2">30 Günlük Kişisel Gelişim Challenge</h3>
+                        <p class="text-gray-400">Her gün daha iyi bir versiyonun için</p>
+                    </div>
+                    <div class="flex space-x-4">
+                        <a href="#" class="hover:text-indigo-400 transition duration-300">Hakkımızda</a>
+                        <a href="#" class="hover:text-indigo-400 transition duration-300">İletişim</a>
+                        <a href="#" class="hover:text-indigo-400 transition duration-300">Gizlilik Politikası</a>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-gray-700 text-center text-gray-400 text-sm">
+                    &copy; 2025 beysperi Tüm hakları saklıdır.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Completion Modal -->
+    <div id="completion-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Harika İş!</h3>
+                <p class="text-gray-600 mb-6">Bugünün challenge'ını tamamladın. Kişisel gelişim yolculuğunda bir adım daha ilerledin!</p>
+                <div class="flex flex-col space-y-3">
+                    <button id="share-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"></path>
+                        </svg>
+                        Başarını Paylaş
+                    </button>
+                    <button id="close-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition duration-300">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Details Modal -->
+    <div id="challenge-details-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="detail-title" class="text-2xl font-bold text-gray-800">Challenge Detayları</h3>
+                <button id="close-details-modal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p id="detail-date" class="text-sm text-gray-500 mb-2">Tarih: 1 Ocak 2023</p>
+                <p id="detail-category" class="text-sm text-indigo-600 mb-4">Kategori: Zihinsel Gelişim</p>
+                <p id="detail-description" class="text-gray-700">Challenge açıklaması burada görünecek.</p>
+            </div>
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-2">Notlar</h4>
+                <textarea id="detail-notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Bu challenge hakkında notlarını buraya yazabilirsin..."></textarea>
+            </div>
+            <div class="flex space-x-3">
+                <button id="save-notes-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300 flex-1">Notları Kaydet</button>
+                <button id="mark-complete-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300 flex-1">Tamamlandı İşaretle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Ayarlar</h3>
+                <button id="close-settings-modal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Bildirimler</h4>
+                    <div class="space-y-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="daily-reminder" class="mr-3 rounded">
+                            <span class="text-gray-700">Günlük hatırlatma</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="streak-reminder" class="mr-3 rounded">
+                            <span class="text-gray-700">Seri kırılma uyarısı</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Tema</h4>
+                    <select id="theme-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="light">Açık Tema</option>
+                        <option value="dark">Koyu Tema</option>
+                        <option value="auto">Otomatik</option>
+                    </select>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Dil</h4>
+                    <select id="language-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="tr">Türkçe</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Veri</h4>
+                    <div class="space-y-2">
+                        <button id="export-data" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium transition duration-300">
+                            Verileri Dışa Aktar
+                        </button>
+                        <button id="reset-progress" class="w-full bg-red-200 hover:bg-red-300 text-red-800 py-2 rounded-lg font-medium transition duration-300">
+                            İlerlemeyi Sıfırla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Success Modal -->
+    <div id="share-success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Paylaşım Seçenekleri</h3>
+                <p class="text-gray-600 mb-6">Challenge başarını sosyal medyada paylaş!</p>
+                <div class="flex justify-center space-x-3 mb-6">
+                    <button id="share-whatsapp" class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full transition duration-300">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.106"/>
+                        </svg>
+                    </button>
+                    <button id="share-twitter" class="bg-blue-400 hover:bg-blue-500 text-white p-3 rounded-full transition duration-300">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                    </button>
+                    <button id="share-instagram" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-3 rounded-full transition duration-300">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </button>
+                </div>
+                <button id="close-share-modal" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-medium transition duration-300">
+                    Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    
+</body>
+</html>
